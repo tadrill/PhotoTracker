@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Camera_Shit</string>
+    <string name="add_tag">Add a Tag</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="graph">Graph</string>
+    <string name="delete">Delete</string>
+    <integer name="numColumns">2</integer>
+</resources>

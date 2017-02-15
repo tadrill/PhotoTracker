@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_edit"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000"
+    tools:context="com.example.tdvpr_000.camera_shit.EditActivity">
+
+    <com.example.tdvpr_000.camera_shit.AspectRatio
+        android:id="@+id/previewAspectFrameLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_centerInParent="true">
+
+        <SurfaceView
+            android:id="@+id/video_preview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </com.example.tdvpr_000.camera_shit.AspectRatio>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_alignParentBottom="true">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_alignParentBottom="false">
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <EditText
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="4"
+                    android:layout_marginLeft="20dp"
+                    android:background="@color/common_google_signin_btn_text_dark_default"
+                    android:id="@+id/textBox"
+                    android:hint="@string/add_tag"
+                    android:textColorHint="@color/common_google_signin_btn_text_light_default"
+                    android:textColor="?attr/colorPrimaryDark"
+                    android:textSize="20sp" />
+                <Button
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="add"
+                    android:id="@+id/addTag"
+                    style="@style/Widget.AppCompat.Button.Borderless.Colored"
+                    android:background="@color/colorAccent"
+                    android:textColorLink="@color/common_google_signin_btn_text_dark_default"
+                    android:textColor="@color/common_google_signin_btn_text_dark_default" />
+
+            </LinearLayout>
+
+            <ListView
+                android:layout_height="150dp"
+                android:layout_width="match_parent"
+                android:id="@+id/tagList">
+            </ListView>
+        </LinearLayout>
+
+    </LinearLayout>
+</RelativeLayout>
