@@ -138,6 +138,8 @@
             <!--android:layout_alignStart="@+id/linearLayout" />-->
 
 
+
+
         <com.github.florent37.camerafragment.widgets.RecordButton
             android:id="@+id/record_button"
             android:layout_width="75dp"
@@ -149,19 +151,6 @@
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
             android:layout_marginBottom="13dp" />
-
-        <com.github.florent37.camerafragment.widgets.FlashSwitchView
-            android:id="@+id/flash_switch_view"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:layout_centerInParent="false"
-            android:layout_gravity="bottom"
-            android:layout_marginRight="15dp"
-            android:layout_marginEnd="21dp"
-            android:layout_marginTop="14dp"
-            android:layout_below="@+id/linearLayout2"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true" />
 
         <com.github.florent37.camerafragment.widgets.MediaActionSwitchView
             android:id="@+id/photo_video_camera_switcher"
@@ -175,6 +164,30 @@
             android:layout_alignBottom="@+id/record_button"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true" />
+
+        <com.github.florent37.camerafragment.widgets.FlashSwitchView
+            android:id="@+id/flash_switch_view"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_centerInParent="false"
+            android:layout_gravity="bottom"
+            android:layout_marginRight="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="44dp"
+            android:layout_below="@+id/linearLayout2"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+
+        <ImageButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/gallery"
+            android:background="@drawable/circle_frame_background"
+            android:layout_alignTop="@+id/flash_switch_view"
+            android:layout_alignLeft="@+id/photo_video_camera_switcher"
+            android:layout_alignStart="@+id/photo_video_camera_switcher"
+            android:id="@+id/imageButton"
+            />
 
     </RelativeLayout>
 

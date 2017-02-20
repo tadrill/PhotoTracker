@@ -249,8 +249,8 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
 
 
         List<String> list = DBManager.tagsFrom(previewFilePath);
-
-
+        adapter.addAll(list);
+        adapter.notifyDataSetChanged();
 
 //        View tags = findViewById(R.id.tagView);
 //        photoPreviewContainer.addView(tags);
@@ -435,6 +435,8 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
 //            resultIntent.putExtra(RESPONSE_CODE_ARG, ACTION_RETAKE);
         } else if (view.getId() == R.id.cancel_media_action) {
             deleteMediaFile();
+            DBManager.getWritableDatabase().delete(DBContract.FeedEntry.TABLE_NAME,
+                    " " + DBContract.FeedEntry.COLUMN_FILE + " = '" + previewFilePath + "'", null);
             resultIntent.putExtra(RESPONSE_CODE_ARG, ACTION_CANCEL);
         } else if (view.getId() == R.id.textBox) {
             EditText text = (EditText) view;

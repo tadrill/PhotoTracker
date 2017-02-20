@@ -7,6 +7,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.os.DropBoxManager;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 
 import com.github.mikephil.charting.data.Entry;
@@ -25,22 +26,39 @@ public class DBManager extends SQLiteOpenHelper {
             + " (" + DBContract.FeedEntry._ID + " INTEGER PRIMARY KEY,"
             + DBContract.FeedEntry.COLUMN_FILE + " TEXT,"
             + DBContract.FeedEntry.COLUMN_TAGS + " TEXT,"
-            + DBContract.FeedEntry.COLUMN_DATES + " INT)";
+            + DBContract.FeedEntry.COLUMN_DATES + " LONG)";
 
-    private static final String SQL_DELETE_ENTRIES = "DROP TABLE IF EXISTS" + DBContract.FeedEntry.TABLE_NAME;
+    private static final String SQL_DELETE_ENTRIES = "DROP TABLE '" + DBContract.FeedEntry.TABLE_NAME + "'";
+
 
     // get tags from file location
-    private static final String SQL_TAGS = "SELECT " + DBContract.FeedEntry.COLUMN_TAGS
+    private static final String SQL_TAGS = "SELECT DISTINCT " + DBContract.FeedEntry.COLUMN_TAGS + ", " + DBContract.FeedEntry.COLUMN_DATES
             + " FROM " + DBContract.FeedEntry.TABLE_NAME
             + " WHERE " + DBContract.FeedEntry.COLUMN_FILE + " = ";
 
+    // get counts for each tag
     private static final String SQL_TAG_COUNT = "SELECT " + DBContract.FeedEntry.COLUMN_TAGS + ", count("
             + DBContract.FeedEntry.COLUMN_TAGS + ") AS c" + " FROM " + DBContract.FeedEntry.TABLE_NAME + " GROUP BY "
             + DBContract.FeedEntry.COLUMN_TAGS;
 
 
-    public static final int DATABASE_VERSION = 1;
 
+    public static int DATABASE_VERSION = 1;
+
+    // if passed -1, returns all
+    public Cursor filesFromPastNDays(int n) {
+        String queryStart = "SELECT DISTINCT " + DBContract.FeedEntry.COLUMN_FILE + ", " + DBContract.FeedEntry.COLUMN_DATES
+                + " FROM " + DBContract.FeedEntry.TABLE_NAME;
+        String queryEnd = " ORDER BY " + DBContract.FeedEntry.COLUMN_DATES + " DESC";
+        if (n == -1) {
+            return getReadableDatabase().rawQuery(queryStart + queryEnd, null);
+        }
+        long millisPerDay = 86400000;
+        long currentTime = System.currentTimeMillis();
+        long product = n * millisPerDay;
+        return getReadableDatabase().rawQuery(queryStart + " WHERE (" + currentTime
+                + " - " + DBContract.FeedEntry.COLUMN_DATES + ") < " + product + queryEnd, null);
+    }
 
     public List<String> tagsFrom(String previewFilePath) {
         SQLiteDatabase db = getReadableDatabase();
@@ -67,7 +85,8 @@ public class DBManager extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        onUpgrade(db, oldVersion, newVersion);
+        db.execSQL("DROP TABLE IF EXISTS " + DBContract.FeedEntry.TABLE_NAME);
+        onCreate(db);
     }
 
     public void insertTags(String previewFilePath, ArrayAdapter<String> adapter) {
@@ -90,6 +109,11 @@ public class DBManager extends SQLiteOpenHelper {
             }
         }
 
+    }
+
+    public Cursor countTag() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery(SQL_TAG_COUNT, null);
     }
 
     public Map<String, Integer> countTags() {

@@ -15,6 +15,7 @@ import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -36,34 +37,52 @@ public class GraphActivity extends AppCompatActivity {
 
     public void makeGraph() {
         SQLiteDatabase db = dbman.getReadableDatabase();
-        Map<String, Integer> map = dbman.countTags();
-
+//        Map<String, Integer> map = dbman.countTags();
+        Cursor cursor = dbman.countTag();
 
         chart = (BarChart) findViewById(R.id.chart);
         XAxis bottom = chart.getXAxis();
-
-        String[] tags = new String[map.size()];
-        map.keySet().toArray(tags);
-        bottom.setValueFormatter(new MyXAxisValueFormatter(tags));
-
+        int length = cursor.getCount();
+        String[] tags = new String[length];
+//        map.keySet().toArray(tags);
         List<BarEntry> list = new ArrayList<BarEntry>();
-        int i = 0;
-        for (Map.Entry<String, Integer> entry : map.entrySet()) {
-            list.add(new BarEntry(i, entry.getValue()));
-            Log.v("MAP TAG", entry.getKey() + ", " + entry.getValue());
-            i++;
+        int j = 0;
+        while (cursor.moveToNext()) {
+//            cursor.getColumnName(cursor.getColumnIndex(DBContract.FeedEntry.COLUMN_TAGS))
+            tags[j] = cursor.getString(cursor.getColumnIndex(DBContract.FeedEntry.COLUMN_TAGS));
+            int bla = cursor.getInt(cursor.getColumnIndex("c"));
+            list.add(new BarEntry(j, bla));
+            Log.v("MAP TAG", tags[j] + ", " + bla);
+            j++;
         }
+        bottom.setValueFormatter(new MyXAxisValueFormatter(tags));
+        int i = 0;
+//        for (Map.Entry<String, Integer> entry : map.entrySet()) {
+//            list.add(new BarEntry(i, entry.getValue()));
+//            Log.v("MAP TAG", entry.getKey() + ", " + entry.getValue());
+//            i++;
+//        }
 
         BarDataSet dataSet = new BarDataSet(list, "Your Tags");
 
         BarData barData = new BarData(dataSet);
 //        chart.setFitBars(true); // make the x-axis fit exactly all bars
 //        barData.setBarWidth(0.9f); // set custom bar width
-        bottom.setLabelCount(map.size());
+
+        bottom.setLabelCount(length);
         chart.setData(barData);
         bottom.setLabelRotationAngle(270);
+
+        YAxis rightYAxis = chart.getAxisLeft();
+        rightYAxis.setAxisMaxValue(7);
+        rightYAxis.setAxisMinValue(0);
+
+        rightYAxis.setLabelCount(7);
+
+
         chart.invalidate(); // refresh
     }
+
 
     public class MyXAxisValueFormatter implements IAxisValueFormatter {
 
