@@ -15,10 +15,16 @@
         </android.support.v7.widget.AppCompatSpinner>
         <Button
             android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/filter_button"
+            android:text="filter"/>
+        <Button
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:id="@+id/graph_button"
             android:layout_weight="1"
             android:text="@string/graph"/>
+
     </LinearLayout>
     <GridView
         android:layout_width="match_parent"

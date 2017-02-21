@@ -41,6 +41,10 @@ public class DBManager extends SQLiteOpenHelper {
             + DBContract.FeedEntry.COLUMN_TAGS + ") AS c" + " FROM " + DBContract.FeedEntry.TABLE_NAME + " GROUP BY "
             + DBContract.FeedEntry.COLUMN_TAGS;
 
+    private static final String SQL_WITH_TAGS = "SELECT DISTINCT " + DBContract.FeedEntry.COLUMN_FILE + " FROM " + DBContract.FeedEntry.TABLE_NAME
+            + " WHERE " + DBContract.FeedEntry.COLUMN_TAGS + " = ";
+
+    private static final String SQL_ALL_TAGS = "SELECT DISTINCT " + DBContract.FeedEntry.COLUMN_TAGS + " FROM " + DBContract.FeedEntry.TABLE_NAME;
 
 
     public static int DATABASE_VERSION = 1;
@@ -109,6 +113,23 @@ public class DBManager extends SQLiteOpenHelper {
             }
         }
 
+    }
+
+    public Cursor allTags() {
+        SQLiteDatabase db = this.getReadableDatabase();
+        return db.rawQuery(SQL_ALL_TAGS, null);
+    }
+
+    public Cursor allFilesWithTags(List<String> tags) {
+        if (tags.isEmpty()) {
+            return null;
+        }
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = SQL_WITH_TAGS + "'" + tags.get(0) + "'";
+        for (int i = 1; i < tags.size(); i++) {
+            query += " OR " + DBContract.FeedEntry.COLUMN_TAGS + " = '" + tags.get(i) + "'";
+        }
+        return db.rawQuery(query, null);
     }
 
     public Cursor countTag() {
