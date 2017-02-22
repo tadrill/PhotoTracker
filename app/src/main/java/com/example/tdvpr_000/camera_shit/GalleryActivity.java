@@ -53,7 +53,11 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
     GridView gridView;
     // list for the adapter
     List<String> list;
+    List<String> currentTags;
+    public boolean allTags;
     Button filterButton;
+    Spinner spinner;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +69,13 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
         list = new ArrayList<String>();
         adapter = new ImageListAdapter(this, list);
         filterButton = (Button) findViewById(R.id.filter_button);
+        allTags = true;
+        currentTags = new ArrayList<String>();
+        Cursor c = dbman.allTags();
+        while (c.moveToNext()) {
+            currentTags.add(c.getString(c.getColumnIndex(DBContract.FeedEntry.COLUMN_TAGS)));
+        }
+        spinner = (Spinner) findViewById(R.id.date_spinner);
         cleanDB();
 
         dateQuery(dbman.filesFromPastNDays(-1));
@@ -168,14 +179,14 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        List<String> temp = new ArrayList<String>();
+                        currentTags.clear();
                         for (int i = 1; i < tagsList.size(); i++) {
                             if (checkedTags[i]) {
-                                temp.add(tagsList.get(i));
-                                Log.v("THE TAG", "WAS " + tagsList.get(i));
+                                currentTags.add(tagsList.get(i));
                             }
                         }
-                        Cursor c = dbman.allFilesWithTags(temp);
+
+                        Cursor c = dbman.totalFilter(currentTags, getDaysFromSpinner());
                         adapter.clear();
                         if (c == null) {
                             adapter.notifyDataSetChanged();
@@ -202,6 +213,21 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
         });
     }
 
+    public int getDaysFromSpinner() {
+        String s = (String)spinner.getSelectedItem();
+        String[] strs = s.split(" ");
+        int n = 0;
+        if (strs.length == 2) {
+            n = -1;
+        } else {
+            n = Integer.parseInt(strs[1]);
+            if (n == 24) {
+                n = 1;
+            }
+        }
+        return n;
+    }
+
     // if someone deletes file from their directory manually, we make sure DB is updated
     public void cleanDB() {
         Cursor c = dbman.filesFromPastNDays(-1);
@@ -218,10 +244,10 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
     public void dateQuery(Cursor cursor) {
         adapter.clear();
         list.clear();
+
         while (cursor.moveToNext()) {
             String f = cursor.getString(cursor.getColumnIndex(DBContract.FeedEntry.COLUMN_FILE));
             list.add(f);
-            Log.v("THE DATE", "" + cursor.getString(cursor.getColumnIndex(DBContract.FeedEntry.COLUMN_DATES)));
 
             gridView.setAdapter(adapter);
         }
@@ -229,7 +255,6 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
     }
 
     public void populateSpinner() {
-        Spinner spinner = (Spinner) findViewById(R.id.date_spinner);
         // Create an ArrayAdapter using the string array and a default spinner layout
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getApplicationContext(),
                 R.array.within_last_days_array, android.R.layout.simple_spinner_dropdown_item);
@@ -244,19 +269,11 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        String s = (String)parent.getItemAtPosition(position);
-        String[] strs = s.split(" ");
-        int n = 0;
-        if (strs.length == 2) {
-            n = -1;
-        } else {
-            n = Integer.parseInt(strs[1]);
-            if (n == 24) {
-                n = 1;
-            }
-        }
-        dateQuery(dbman.filesFromPastNDays(n));
+        Cursor c = dbman.totalFilter(currentTags, getDaysFromSpinner());
+        dateQuery(c);
     }
+
+
 
     @Override
     public void onNothingSelected(AdapterView<?> parent) {

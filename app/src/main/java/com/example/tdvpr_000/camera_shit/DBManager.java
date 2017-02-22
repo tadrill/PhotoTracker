@@ -42,7 +42,7 @@ public class DBManager extends SQLiteOpenHelper {
             + DBContract.FeedEntry.COLUMN_TAGS;
 
     private static final String SQL_WITH_TAGS = "SELECT DISTINCT " + DBContract.FeedEntry.COLUMN_FILE + " FROM " + DBContract.FeedEntry.TABLE_NAME
-            + " WHERE " + DBContract.FeedEntry.COLUMN_TAGS + " = ";
+            + " WHERE " + DBContract.FeedEntry.COLUMN_TAGS + " IN ";
 
     private static final String SQL_ALL_TAGS = "SELECT DISTINCT " + DBContract.FeedEntry.COLUMN_TAGS + " FROM " + DBContract.FeedEntry.TABLE_NAME;
 
@@ -51,7 +51,8 @@ public class DBManager extends SQLiteOpenHelper {
 
     // if passed -1, returns all
     public Cursor filesFromPastNDays(int n) {
-        String queryStart = "SELECT DISTINCT " + DBContract.FeedEntry.COLUMN_FILE + ", " + DBContract.FeedEntry.COLUMN_DATES
+        String queryStart = "SELECT DISTINCT " +
+                DBContract.FeedEntry.COLUMN_FILE + ", " + DBContract.FeedEntry.COLUMN_DATES
                 + " FROM " + DBContract.FeedEntry.TABLE_NAME;
         String queryEnd = " ORDER BY " + DBContract.FeedEntry.COLUMN_DATES + " DESC";
         if (n == -1) {
@@ -120,16 +121,38 @@ public class DBManager extends SQLiteOpenHelper {
         return db.rawQuery(SQL_ALL_TAGS, null);
     }
 
+
+    public Cursor totalFilter(List<String> tags, int days) {
+            if (tags.isEmpty()) {
+                return null;
+            }
+            SQLiteDatabase db = this.getReadableDatabase();
+            String query = SQL_WITH_TAGS + "('" + tags.get(0) + "'";
+            for (int i = 1; i < tags.size(); i++) {
+                query += ",'" + tags.get(i) + "'";
+            }
+            query += ")";
+            if (days > -1) {
+                long millisPerDay = 86400000;
+                long currentTime = System.currentTimeMillis();
+                long product = days * millisPerDay;
+                long diff = currentTime - product;
+                query += " AND " + DBContract.FeedEntry.COLUMN_DATES + " > " + diff;
+            }
+            return db.rawQuery(query, null);
+    }
+
+
     public Cursor allFilesWithTags(List<String> tags) {
         if (tags.isEmpty()) {
             return null;
         }
         SQLiteDatabase db = this.getReadableDatabase();
-        String query = SQL_WITH_TAGS + "'" + tags.get(0) + "'";
+        String query = SQL_WITH_TAGS + "('" + tags.get(0) + "'";
         for (int i = 1; i < tags.size(); i++) {
-            query += " OR " + DBContract.FeedEntry.COLUMN_TAGS + " = '" + tags.get(i) + "'";
+            query += ",'" + tags.get(i) + "'";
         }
-        return db.rawQuery(query, null);
+        return db.rawQuery(query + ")", null);
     }
 
     public Cursor countTag() {
