@@ -404,7 +404,7 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
 
             // let's try and put it in a db
 
-            DBManager.insertTags(previewFilePath, adapter);
+            DBManager.insertTags(previewFilePath, adapter, -1);
 
 
 //            } catch (IOException e) {

@@ -1,6 +1,7 @@
 package com.example.tdvpr_000.camera_shit;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.media.ExifInterface;
 import android.support.v7.app.AppCompatActivity;
@@ -421,13 +422,12 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
 //                System.exit(-1);
 //            }
 //
-
-
+            long date = DBManager.getDateFromFile(previewFilePath);
             // let's try and do this in a database
             DBManager.getWritableDatabase().delete(DBContract.FeedEntry.TABLE_NAME, DBContract.FeedEntry.COLUMN_FILE
                     + "= '" + previewFilePath + "'", null);
 
-            DBManager.insertTags(previewFilePath, adapter);
+            DBManager.insertTags(previewFilePath, adapter, date);
 
 
 //        } else if (view.getId() == R.id.re_take_media) {

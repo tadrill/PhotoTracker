@@ -41,17 +41,17 @@ public class DBManager extends SQLiteOpenHelper {
             + DBContract.FeedEntry.COLUMN_TAGS + ") AS c" + " FROM " + DBContract.FeedEntry.TABLE_NAME + " GROUP BY "
             + DBContract.FeedEntry.COLUMN_TAGS;
 
-    private static final String SQL_WITH_TAGS = "SELECT DISTINCT " + DBContract.FeedEntry.COLUMN_FILE + " FROM " + DBContract.FeedEntry.TABLE_NAME
+    private static final String SQL_WITH_TAGS = "SELECT DISTINCT " + DBContract.FeedEntry._ID + "," + DBContract.FeedEntry.COLUMN_FILE + " FROM " + DBContract.FeedEntry.TABLE_NAME
             + " WHERE " + DBContract.FeedEntry.COLUMN_TAGS + " IN ";
 
-    private static final String SQL_ALL_TAGS = "SELECT DISTINCT " + DBContract.FeedEntry.COLUMN_TAGS + " FROM " + DBContract.FeedEntry.TABLE_NAME;
+    private static final String SQL_ALL_TAGS = "SELECT DISTINCT " + DBContract.FeedEntry._ID + "," + DBContract.FeedEntry.COLUMN_TAGS + " FROM " + DBContract.FeedEntry.TABLE_NAME + " ORDER BY " + DBContract.FeedEntry.COLUMN_DATES + " DESC";
 
 
     public static int DATABASE_VERSION = 1;
 
     // if passed -1, returns all
     public Cursor filesFromPastNDays(int n) {
-        String queryStart = "SELECT DISTINCT " +
+        String queryStart = "SELECT DISTINCT " + DBContract.FeedEntry._ID + "," +
                 DBContract.FeedEntry.COLUMN_FILE + ", " + DBContract.FeedEntry.COLUMN_DATES
                 + " FROM " + DBContract.FeedEntry.TABLE_NAME;
         String queryEnd = " ORDER BY " + DBContract.FeedEntry.COLUMN_DATES + " DESC";
@@ -94,15 +94,33 @@ public class DBManager extends SQLiteOpenHelper {
         onCreate(db);
     }
 
-    public void insertTags(String previewFilePath, ArrayAdapter<String> adapter) {
+    public long getDateFromFile(String previewFilePath) {
+        SQLiteDatabase db = getWritableDatabase();
+        Cursor c = db.rawQuery("SELECT " + DBContract.FeedEntry.COLUMN_DATES + " FROM " + DBContract.FeedEntry.TABLE_NAME + " WHERE " + DBContract.FeedEntry.COLUMN_FILE + "='" + previewFilePath + "'", null);
+        String[] s = c.getColumnNames();
+        for (int i = 0; i < s.length; i ++) {
+            Log.v("DATABAW", s[i]);
+        }
+        int idx = c.getColumnIndex(DBContract.FeedEntry.COLUMN_DATES);
+        if (c.moveToNext()) {
+            Log.v("INDEX :", idx + "");
+            return c.getLong(idx);
+        }
+        else
+            return -1;
+    }
+
+    public void insertTags(String previewFilePath, ArrayAdapter<String> adapter, long date) {
         if (adapter.getCount() != 0) {
             SQLiteDatabase db = this.getWritableDatabase();
-
+            if (date == -1) {
+                date = System.currentTimeMillis();
+            }
             // Create a new map of values, where column names are the keys
             ContentValues values = new ContentValues();
             values.put(DBContract.FeedEntry.COLUMN_FILE, previewFilePath);
             values.put(DBContract.FeedEntry.COLUMN_TAGS, adapter.getItem(0));
-            values.put(DBContract.FeedEntry.COLUMN_DATES, System.currentTimeMillis());
+            values.put(DBContract.FeedEntry.COLUMN_DATES, date);
 
             db.insert(DBContract.FeedEntry.TABLE_NAME, DBContract.FeedEntry.COLUMN_TAGS, values);
 
@@ -139,6 +157,7 @@ public class DBManager extends SQLiteOpenHelper {
                 long diff = currentTime - product;
                 query += " AND " + DBContract.FeedEntry.COLUMN_DATES + " > " + diff;
             }
+        query += " ORDER BY " + DBContract.FeedEntry.COLUMN_DATES + " DESC";
             return db.rawQuery(query, null);
     }
 

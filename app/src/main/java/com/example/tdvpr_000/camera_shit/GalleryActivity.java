@@ -13,6 +13,7 @@ import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.widget.CursorAdapter;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -48,7 +49,7 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
             Environment.DIRECTORY_PICTURES).getAbsolutePath();
     private String PACKAGE_NAME;
     private File[] files;
-    private ImageListAdapter adapter;
+//    private ImageListAdapter adapter;
     private DBManager dbman;
     GridView gridView;
     // list for the adapter
@@ -57,7 +58,7 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
     public boolean allTags;
     Button filterButton;
     Spinner spinner;
-
+    CustomCursorAdapter adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,13 +66,16 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
         setContentView(R.layout.gallery);
         PACKAGE_NAME = getApplicationContext().getPackageName();
         gridView = (GridView) findViewById(R.id.gallery_grid);
+
         dbman = new DBManager(getApplicationContext());
         list = new ArrayList<String>();
-        adapter = new ImageListAdapter(this, list);
+//        adapter = new ImageListAdapter(this, list);
+        Cursor c = dbman.allTags();
+        adapter = new CustomCursorAdapter(c);
         filterButton = (Button) findViewById(R.id.filter_button);
         allTags = true;
         currentTags = new ArrayList<String>();
-        Cursor c = dbman.allTags();
+
         while (c.moveToNext()) {
             currentTags.add(c.getString(c.getColumnIndex(DBContract.FeedEntry.COLUMN_TAGS)));
         }
@@ -79,13 +83,19 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
         cleanDB();
 
         dateQuery(dbman.filesFromPastNDays(-1));
-
+        gridView.setAdapter(adapter);
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String str = (String) adapter.getItem(position);
+                Cursor temp =  adapter.getCursor();
+                int oldPos = temp.getPosition();
+                temp.moveToPosition(position);
+                String str = temp.getString(temp.getColumnIndex(DBContract.FeedEntry.COLUMN_FILE));
+//                        adapter.getItem(position);
+                temp.moveToPosition(oldPos);
                 Intent intent = new Intent(getApplicationContext(), EditActivity.class);
+
                 intent.putExtra(FILE_PATH_ARG, str);
                 startActivity(intent);
             }
@@ -187,16 +197,19 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
                         }
 
                         Cursor c = dbman.totalFilter(currentTags, getDaysFromSpinner());
-                        adapter.clear();
-                        if (c == null) {
-                            adapter.notifyDataSetChanged();
-                            return;
-                        }
-                        while (c.moveToNext()) {
-                            String file = c.getString(c.getColumnIndex(DBContract.FeedEntry.COLUMN_FILE));
-                            adapter.add(file);
-                        }
-                        adapter.notifyDataSetChanged();
+
+                        adapter.changeCursor(c);
+//                        adapter.clear();
+//
+//                        if (c == null) {
+//                            adapter.notifyDataSetChanged();
+//                            return;
+//                        }
+//                        while (c.moveToNext()) {
+//                            String file = c.getString(c.getColumnIndex(DBContract.FeedEntry.COLUMN_FILE));
+//                            adapter.add(file);
+//                        }
+//                        adapter.notifyDataSetChanged();
                     }
                 });
                 // Set the neutral/cancel button click listener
@@ -242,16 +255,17 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
 
 
     public void dateQuery(Cursor cursor) {
-        adapter.clear();
-        list.clear();
-
-        while (cursor.moveToNext()) {
-            String f = cursor.getString(cursor.getColumnIndex(DBContract.FeedEntry.COLUMN_FILE));
-            list.add(f);
-
-            gridView.setAdapter(adapter);
-        }
-        adapter.notifyDataSetChanged();
+        adapter.changeCursor(cursor);
+//        adapter.clear();
+//        list.clear();
+//
+//        while (cursor.moveToNext()) {
+//            String f = cursor.getString(cursor.getColumnIndex(DBContract.FeedEntry.COLUMN_FILE));
+//            list.add(f);
+//
+//            gridView.setAdapter(adapter);
+//        }
+//        adapter.notifyDataSetChanged();
     }
 
     public void populateSpinner() {
@@ -307,6 +321,31 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
             ImageView img = (ImageView) convertView;
             builder.load(paths.get(position)).build().into(img);
             return convertView;
+        }
+    }
+
+    private class CustomCursorAdapter extends CursorAdapter {
+        Cursor c;
+        LayoutInflater mLayoutInflater;
+        public CustomCursorAdapter(Cursor cursor) {
+            super(getApplicationContext(), cursor, 0);
+            mLayoutInflater = LayoutInflater.from(getApplicationContext());
+            c = cursor;
+        }
+
+        @Override
+        public View newView(Context context, Cursor cursor, ViewGroup parent) {
+            View v = mLayoutInflater.inflate(R.layout.picture, parent, false);
+            return v;
+        }
+
+        @Override
+        public void bindView(View view, Context context, Cursor cursor) {
+//            ImageView iv = (ImageView)findViewById(R.id.picture);
+            ImageLoader.Builder builder = new ImageLoader.Builder(GalleryActivity.this);
+            builder.load(cursor.getString(cursor.getColumnIndex(DBContract.FeedEntry.COLUMN_FILE)))
+                    .build().into((ImageView)view);
+            Log.v("BIND VIEW", cursor.getString(cursor.getColumnIndex(DBContract.FeedEntry.COLUMN_FILE)));
         }
     }
 }
