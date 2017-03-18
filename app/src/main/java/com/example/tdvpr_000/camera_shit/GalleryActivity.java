@@ -40,7 +40,9 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class GalleryActivity extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     private final String LOG_TAG = this.getClass().getSimpleName();
@@ -54,7 +56,7 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
     GridView gridView;
     // list for the adapter
     List<String> list;
-    List<String> currentTags;
+    Set<String> currentTags;
     public boolean allTags;
     Button filterButton;
     Spinner spinner;
@@ -74,9 +76,12 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
         adapter = new CustomCursorAdapter(c);
         filterButton = (Button) findViewById(R.id.filter_button);
         allTags = true;
-        currentTags = new ArrayList<String>();
+        currentTags = new HashSet<String>();
+
 
         while (c.moveToNext()) {
+            if (currentTags.contains(c.getString(c.getColumnIndex(DBContract.FeedEntry.COLUMN_TAGS)))) {
+            }
             currentTags.add(c.getString(c.getColumnIndex(DBContract.FeedEntry.COLUMN_TAGS)));
         }
         spinner = (Spinner) findViewById(R.id.date_spinner);
@@ -136,7 +141,24 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
 
                 // Boolean array for initial selected items
                 final boolean[] checkedTags = new boolean[allTags.length];
-                Arrays.fill(checkedTags, true);
+
+                Log.v("apples", "" + currentTags.size() + ", " + " alltags: " + allTags.length);
+
+
+                if (currentTags.size() == checkedTags.length - 1) {
+                    checkedTags[0] = true;
+                    Arrays.fill(checkedTags, true);
+                } else {
+                    checkedTags[0] = false;
+                    for (int j = 1; j < checkedTags.length; j++) {
+                        if (currentTags.contains(allTags[j])) {
+                            checkedTags[j] = true;
+                        } else {
+                            checkedTags[j] = false;
+                        }
+                    }
+                }
+//                Arrays.fill(checkedTags, true);
 
                 // Convert the color array to list
                 final List<String> tagsList = Arrays.asList(allTags);

@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by tdvpr_000 on 2/14/2017.
@@ -44,7 +45,7 @@ public class DBManager extends SQLiteOpenHelper {
     private static final String SQL_WITH_TAGS = "SELECT DISTINCT " + DBContract.FeedEntry._ID + "," + DBContract.FeedEntry.COLUMN_FILE + " FROM " + DBContract.FeedEntry.TABLE_NAME
             + " WHERE " + DBContract.FeedEntry.COLUMN_TAGS + " IN ";
 
-    private static final String SQL_ALL_TAGS = "SELECT DISTINCT " + DBContract.FeedEntry._ID + "," + DBContract.FeedEntry.COLUMN_TAGS + " FROM " + DBContract.FeedEntry.TABLE_NAME + " ORDER BY " + DBContract.FeedEntry.COLUMN_DATES + " DESC";
+    private static final String SQL_ALL_TAGS = "SELECT " + DBContract.FeedEntry._ID + ", " + DBContract.FeedEntry.COLUMN_TAGS + " FROM " + DBContract.FeedEntry.TABLE_NAME + " GROUP BY " + DBContract.FeedEntry.COLUMN_TAGS + " ORDER BY " + DBContract.FeedEntry.COLUMN_DATES + " DESC";
 
 
     public static int DATABASE_VERSION = 1;
@@ -140,15 +141,24 @@ public class DBManager extends SQLiteOpenHelper {
     }
 
 
-    public Cursor totalFilter(List<String> tags, int days) {
-            if (tags.isEmpty()) {
-                return null;
-            }
+    public Cursor totalFilter(Set<String> tags, int days) {
+            if (tags.isEmpty()) return null;
             SQLiteDatabase db = this.getReadableDatabase();
-            String query = SQL_WITH_TAGS + "('" + tags.get(0) + "'";
-            for (int i = 1; i < tags.size(); i++) {
-                query += ",'" + tags.get(i) + "'";
+//            String query = SQL_WITH_TAGS + "('" + tags.get(0) + "'";
+            String query = "";
+            boolean first = true;
+            for (String s : tags) {
+                if (first) {
+                    query += SQL_WITH_TAGS + "('" + s + "'";
+                    first = false;
+                } else {
+                    query += ",'" + s + "'";
+                }
             }
+//
+//            for (int i = 1; i < tags.size(); i++) {
+//                query += ",'" + tags.get(i) + "'";
+//            }
             query += ")";
             if (days > -1) {
                 long millisPerDay = 86400000;
@@ -157,7 +167,7 @@ public class DBManager extends SQLiteOpenHelper {
                 long diff = currentTime - product;
                 query += " AND " + DBContract.FeedEntry.COLUMN_DATES + " > " + diff;
             }
-        query += " ORDER BY " + DBContract.FeedEntry.COLUMN_DATES + " DESC";
+            query += " ORDER BY " + DBContract.FeedEntry.COLUMN_DATES + " DESC";
             return db.rawQuery(query, null);
     }
 
