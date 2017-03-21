@@ -43,22 +43,26 @@ public class DBManager extends SQLiteOpenHelper {
             + DBContract.FeedEntry.COLUMN_TAGS + ") AS c" + " FROM " + DBContract.FeedEntry.TABLE_NAME + " GROUP BY "
             + DBContract.FeedEntry.COLUMN_TAGS;
 
-    private static final String SQL_WITH_TAGS = "SELECT DISTINCT " + DBContract.FeedEntry._ID + "," + DBContract.FeedEntry.COLUMN_FILE + " FROM " + DBContract.FeedEntry.TABLE_NAME
+    private static final String SQL_WITH_TAGS = "SELECT  min(" + DBContract.FeedEntry._ID + ") as _id, min(" + DBContract.FeedEntry.COLUMN_DATES + ") as " + DBContract.FeedEntry.COLUMN_DATES + ","
+            + DBContract.FeedEntry.COLUMN_FILE + " FROM " + DBContract.FeedEntry.TABLE_NAME
             + " WHERE " + DBContract.FeedEntry.COLUMN_TAGS + " IN ";
 
     private static final String SQL_ALL_TAGS = "SELECT " + DBContract.FeedEntry._ID + ", " + DBContract.FeedEntry.COLUMN_TAGS + " FROM " + DBContract.FeedEntry.TABLE_NAME + " GROUP BY " + DBContract.FeedEntry.COLUMN_TAGS + " ORDER BY " + DBContract.FeedEntry.COLUMN_DATES + " DESC";
 
 
     public static int DATABASE_VERSION = 1;
-
     // if passed -1, returns all
     public Cursor filesFromPastNDays(int n) {
-        String queryStart = "SELECT DISTINCT " + DBContract.FeedEntry._ID + "," +
-                DBContract.FeedEntry.COLUMN_FILE + ", " + DBContract.FeedEntry.COLUMN_DATES
-                + " FROM " + DBContract.FeedEntry.TABLE_NAME;
-        String queryEnd = " ORDER BY " + DBContract.FeedEntry.COLUMN_DATES + " DESC";
+        String queryStart = "SELECT MIN(" + DBContract.FeedEntry._ID + ") as _id," +
+                DBContract.FeedEntry.COLUMN_FILE + ", MIN(" + DBContract.FeedEntry.COLUMN_DATES
+                + ") as " + DBContract.FeedEntry.COLUMN_DATES + " FROM " + DBContract.FeedEntry.TABLE_NAME;
+        String queryEnd = " GROUP BY " + DBContract.FeedEntry.COLUMN_FILE + " ORDER BY " + DBContract.FeedEntry.COLUMN_DATES + " DESC";
         if (n == -1) {
-            return getReadableDatabase().rawQuery(queryStart + queryEnd, null);
+            Cursor c = getReadableDatabase().rawQuery(queryStart + queryEnd, null);
+            while (c.moveToNext()) {
+                Log.v("TESTINGG", ""+c.getCount());//c.getString(c.getColumnIndex(DBContract.FeedEntry.COLUMN_DATES)));
+            }
+            return c;
         }
         long millisPerDay = 86400000;
         long currentTime = System.currentTimeMillis();
@@ -75,7 +79,7 @@ public class DBManager extends SQLiteOpenHelper {
             String tag = cursor.getString(
                     cursor.getColumnIndexOrThrow(DBContract.FeedEntry.COLUMN_TAGS));
             String value = cursor.getString(cursor.getColumnIndex(DBContract.FeedEntry.COLUMN_VALUE));
-            if (!value.equalsIgnoreCase("null")) {
+            if (value != null) {
                 value += tag;
                 result.add(value);
             } else {
@@ -228,7 +232,7 @@ public class DBManager extends SQLiteOpenHelper {
                 long diff = currentTime - product;
                 query += " AND " + DBContract.FeedEntry.COLUMN_DATES + " > " + diff;
             }
-            query += " ORDER BY " + DBContract.FeedEntry.COLUMN_DATES + " DESC";
+            query += " GROUP BY " + DBContract.FeedEntry.COLUMN_FILE + " ORDER BY " + DBContract.FeedEntry.COLUMN_DATES + " DESC";
             return db.rawQuery(query, null);
     }
 

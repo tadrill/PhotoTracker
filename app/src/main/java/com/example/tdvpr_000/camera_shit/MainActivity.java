@@ -97,9 +97,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         // this code deletes the current database. new one will be created automatically
-        DBManager dbman = new DBManager(this);
-        SQLiteDatabase db = dbman.getWritableDatabase();
-        dbman.onUpgrade(db, 1, 2);
+//        DBManager dbman = new DBManager(this);
+//        SQLiteDatabase db = dbman.getWritableDatabase();
+//        dbman.onUpgrade(db, 1, 2);
         this.setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         // ATTENTION: This was auto-generated to implement the App Indexing API.

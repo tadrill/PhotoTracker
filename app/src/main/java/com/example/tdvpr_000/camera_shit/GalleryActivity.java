@@ -73,7 +73,7 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
         list = new ArrayList<String>();
 //        adapter = new ImageListAdapter(this, list);
         Cursor c = dbman.allTags();
-        adapter = new CustomCursorAdapter(c);
+//        adapter = new CustomCursorAdapter(c);
         filterButton = (Button) findViewById(R.id.filter_button);
         allTags = true;
         currentTags = new HashSet<String>();
@@ -86,8 +86,8 @@ public class GalleryActivity extends AppCompatActivity implements AdapterView.On
         }
         spinner = (Spinner) findViewById(R.id.date_spinner);
         cleanDB();
-
-        dateQuery(dbman.filesFromPastNDays(-1));
+        adapter = new CustomCursorAdapter(dbman.filesFromPastNDays(-1));
+//        dateQuery(dbman.filesFromPastNDays(-1));
         gridView.setAdapter(adapter);
 
         gridView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
