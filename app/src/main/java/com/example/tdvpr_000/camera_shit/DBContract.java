@@ -16,6 +16,10 @@ public final class DBContract {
         public static final String COLUMN_FILE = "file";
         public static final String COLUMN_TAGS = "tag";
 
+        public static final String COLUMN_VALUE = "value";
+
+        public static final String DEFAULT_NUMERICAL_TAG = "Numerical";
+
 
         public static final String COLUMN_DATES = "dates";
     }

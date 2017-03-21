@@ -25,15 +25,16 @@ import java.util.Set;
 public class DBManager extends SQLiteOpenHelper {
     private static final String SQL_CREATE_ENTRIES = "CREATE TABLE IF NOT EXISTS " + DBContract.FeedEntry.TABLE_NAME
             + " (" + DBContract.FeedEntry._ID + " INTEGER PRIMARY KEY,"
-            + DBContract.FeedEntry.COLUMN_FILE + " TEXT,"
+            + DBContract.FeedEntry.COLUMN_FILE + " TEXT NOT NULL,"
             + DBContract.FeedEntry.COLUMN_TAGS + " TEXT,"
-            + DBContract.FeedEntry.COLUMN_DATES + " LONG)";
+            + DBContract.FeedEntry.COLUMN_DATES + " LONG NOT NULL,"
+            + DBContract.FeedEntry.COLUMN_VALUE + " INT)";
 
     private static final String SQL_DELETE_ENTRIES = "DROP TABLE '" + DBContract.FeedEntry.TABLE_NAME + "'";
 
 
     // get tags from file location
-    private static final String SQL_TAGS = "SELECT DISTINCT " + DBContract.FeedEntry.COLUMN_TAGS + ", " + DBContract.FeedEntry.COLUMN_DATES
+    private static final String SQL_TAGS = "SELECT DISTINCT " + DBContract.FeedEntry.COLUMN_TAGS + ", " + DBContract.FeedEntry.COLUMN_DATES + ", " + DBContract.FeedEntry.COLUMN_VALUE
             + " FROM " + DBContract.FeedEntry.TABLE_NAME
             + " WHERE " + DBContract.FeedEntry.COLUMN_FILE + " = ";
 
@@ -73,7 +74,13 @@ public class DBManager extends SQLiteOpenHelper {
         while(cursor.moveToNext()) {
             String tag = cursor.getString(
                     cursor.getColumnIndexOrThrow(DBContract.FeedEntry.COLUMN_TAGS));
-            result.add(tag);
+            String value = cursor.getString(cursor.getColumnIndex(DBContract.FeedEntry.COLUMN_VALUE));
+            if (!value.equalsIgnoreCase("null")) {
+                value += tag;
+                result.add(value);
+            } else {
+                result.add(tag);
+            }
         }
         cursor.close();
         return result;
@@ -112,27 +119,81 @@ public class DBManager extends SQLiteOpenHelper {
     }
 
     public void insertTags(String previewFilePath, ArrayAdapter<String> adapter, long date) {
-        if (adapter.getCount() != 0) {
-            SQLiteDatabase db = this.getWritableDatabase();
-            if (date == -1) {
-                date = System.currentTimeMillis();
-            }
-            // Create a new map of values, where column names are the keys
-            ContentValues values = new ContentValues();
-            values.put(DBContract.FeedEntry.COLUMN_FILE, previewFilePath);
-            values.put(DBContract.FeedEntry.COLUMN_TAGS, adapter.getItem(0));
-            values.put(DBContract.FeedEntry.COLUMN_DATES, date);
-
-            db.insert(DBContract.FeedEntry.TABLE_NAME, DBContract.FeedEntry.COLUMN_TAGS, values);
-
-            // puts a row in the database for every tag.
-            // null, or column name as second parameter says what to do if values did not have a column (ie, null or don't insert)
-            for (int i = 1; i < adapter.getCount(); i++) {
-                values.put(DBContract.FeedEntry.COLUMN_TAGS, adapter.getItem(i));
-                db.insert(DBContract.FeedEntry.TABLE_NAME, null, values);
-            }
+        SQLiteDatabase db = this.getWritableDatabase();
+        if (date == -1) {
+            date = System.currentTimeMillis();
+        }
+        // Create a new map of values, where column names are the keys
+        ContentValues values = new ContentValues();
+        values.put(DBContract.FeedEntry.COLUMN_FILE, previewFilePath);
+        values.put(DBContract.FeedEntry.COLUMN_DATES, date);
+        if (adapter.getCount() == 0) {
+            // no tags
+            db.insert(DBContract.FeedEntry.TABLE_NAME, null, values);
+            return;
         }
 
+        String[] split = findNumbers(adapter.getItem(0));
+        if (split.length == 1 && isNumber(split[0])) {
+            // number inputtted
+            values.put(DBContract.FeedEntry.COLUMN_VALUE, split[0]);
+            values.put(DBContract.FeedEntry.COLUMN_TAGS, DBContract.FeedEntry.DEFAULT_NUMERICAL_TAG);
+        } else if (split.length == 1) {
+            // not a number
+            values.put(DBContract.FeedEntry.COLUMN_TAGS, split[0]);
+        } else {
+            // number and tag
+            values.put(DBContract.FeedEntry.COLUMN_TAGS, split[1]);
+            values.put(DBContract.FeedEntry.COLUMN_VALUE, split[0]);
+        }
+
+        db.insert(DBContract.FeedEntry.TABLE_NAME, DBContract.FeedEntry.COLUMN_TAGS, values);
+
+        // puts a row in the database for every tag.
+        for (int i = 1; i < adapter.getCount(); i++) {
+            values.remove(DBContract.FeedEntry.COLUMN_VALUE);
+            String tag = adapter.getItem(i);
+            String[] reg = findNumbers(tag);
+            if (reg.length == 1) {
+                if (isNumber(reg[0])) {
+                    values.put(DBContract.FeedEntry.COLUMN_VALUE, reg[0]);
+                    values.put(DBContract.FeedEntry.COLUMN_TAGS, DBContract.FeedEntry.DEFAULT_NUMERICAL_TAG);
+                } else {
+                    // not numerical
+                    values.put(DBContract.FeedEntry.COLUMN_TAGS, reg[0]);
+                }
+            } else {
+                values.put(DBContract.FeedEntry.COLUMN_TAGS, reg[1]);
+                values.put(DBContract.FeedEntry.COLUMN_VALUE, reg[0]);
+            }
+
+            db.insert(DBContract.FeedEntry.TABLE_NAME, null, values);
+        }
+
+
+    }
+
+    private boolean isNumber(String s) {
+        boolean decimal = false;
+        if (s.isEmpty()) return false;
+        if (s.charAt(0) == '-') s = s.substring(1);
+        for (int i = 0; i < s.length(); i++) {
+            if (!Character.isDigit(s.charAt(i))) {
+                if (s.charAt(i) == '.' && !decimal) {
+                    decimal = true;
+                    continue;
+                }
+                return false;
+            }
+        }
+        return true;
+    }
+
+    // splits string up into number and label
+    // returns String[] with one element if no numerical AND label values
+    private String[] findNumbers(String s) {
+        String[] tmp = s.split("(?<=\\d)\\s*(?=[a-zA-Z])");
+        return tmp;
     }
 
     public Cursor allTags() {
