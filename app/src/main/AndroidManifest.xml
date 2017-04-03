@@ -20,8 +20,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".PreviewActivity" />
-        <activity android:name=".GalleryActivity" />
+        <activity android:name=".PreviewActivity"
+            android:parentActivityName=".MainActivity"/>
+        <activity android:name=".GalleryActivity"
+            android:parentActivityName=".MainActivity"/>
 
         <!--
      ATTENTION: This was auto-generated to add Google Play services to your project for
@@ -31,8 +33,10 @@
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity android:name=".EditActivity" />
-        <activity android:name=".GraphActivity"></activity>
+        <activity android:name=".EditActivity"
+            android:parentActivityName=".GalleryActivity"/>
+        <activity android:name=".GraphActivity"
+            android:parentActivityName=".GalleryActivity"/>
     </application>
 
 </manifest>

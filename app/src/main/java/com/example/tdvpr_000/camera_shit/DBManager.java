@@ -28,10 +28,17 @@ public class DBManager extends SQLiteOpenHelper {
             + DBContract.FeedEntry.COLUMN_FILE + " TEXT NOT NULL,"
             + DBContract.FeedEntry.COLUMN_TAGS + " TEXT,"
             + DBContract.FeedEntry.COLUMN_DATES + " LONG NOT NULL,"
-            + DBContract.FeedEntry.COLUMN_VALUE + " INT)";
+            + DBContract.FeedEntry.COLUMN_VALUE + " NUMERIC)";
 
     private static final String SQL_DELETE_ENTRIES = "DROP TABLE '" + DBContract.FeedEntry.TABLE_NAME + "'";
 
+
+    private static final String SQL_NUMERICAL_TAGS = "SELECT DISTINCT " + DBContract.FeedEntry.COLUMN_TAGS + " FROM " + DBContract.FeedEntry.TABLE_NAME
+            + " WHERE " + DBContract.FeedEntry.COLUMN_VALUE + " IS NOT NULL";
+
+    private static final String SQL_VALUES_WITH_TAG = "SELECT " + DBContract.FeedEntry.COLUMN_VALUE + ","
+            + DBContract.FeedEntry.COLUMN_DATES + " FROM " + DBContract.FeedEntry.TABLE_NAME
+            + " WHERE " + DBContract.FeedEntry.COLUMN_VALUE + " IS NOT NULL AND " + DBContract.FeedEntry.COLUMN_TAGS + " = ";
 
     // get tags from file location
     private static final String SQL_TAGS = "SELECT DISTINCT " + DBContract.FeedEntry.COLUMN_TAGS + ", " + DBContract.FeedEntry.COLUMN_DATES + ", " + DBContract.FeedEntry.COLUMN_VALUE
@@ -69,6 +76,16 @@ public class DBManager extends SQLiteOpenHelper {
         long product = n * millisPerDay;
         return getReadableDatabase().rawQuery(queryStart + " WHERE (" + currentTime
                 + " - " + DBContract.FeedEntry.COLUMN_DATES + ") < " + product + queryEnd, null);
+    }
+
+    public Cursor numericalTags() {
+        return getReadableDatabase().rawQuery(SQL_NUMERICAL_TAGS, null);
+    }
+
+    // returns values and dates associated with he given tag.
+    public Cursor allValuesWithTag(String tag) {
+        return getReadableDatabase().rawQuery(SQL_VALUES_WITH_TAG + "'" + tag + "'" + " ORDER BY " + DBContract.FeedEntry.COLUMN_DATES + " ASC", null);
+
     }
 
     public List<String> tagsFrom(String previewFilePath) {
@@ -132,7 +149,8 @@ public class DBManager extends SQLiteOpenHelper {
         values.put(DBContract.FeedEntry.COLUMN_FILE, previewFilePath);
         values.put(DBContract.FeedEntry.COLUMN_DATES, date);
         if (adapter.getCount() == 0) {
-            // no tags
+            // no tags. we put default
+            values.put(DBContract.FeedEntry.COLUMN_TAGS, DBContract.FeedEntry.DEFAULT_NO_TAGS_INPUTTED);
             db.insert(DBContract.FeedEntry.TABLE_NAME, null, values);
             return;
         }

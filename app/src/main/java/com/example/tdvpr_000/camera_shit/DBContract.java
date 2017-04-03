@@ -19,7 +19,7 @@ public final class DBContract {
         public static final String COLUMN_VALUE = "value";
 
         public static final String DEFAULT_NUMERICAL_TAG = "Numerical";
-
+        public static final String DEFAULT_NO_TAGS_INPUTTED = "No Tags Inputted";
 
         public static final String COLUMN_DATES = "dates";
     }

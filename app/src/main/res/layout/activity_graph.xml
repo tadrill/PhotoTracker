@@ -10,9 +10,21 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.example.tdvpr_000.camera_shit.GraphActivity">
 
-    <com.github.mikephil.charting.charts.BarChart
-        android:id="@+id/chart"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="wrap_content">
+        <android.support.v7.widget.LinearLayoutCompat
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:id="@+id/graphs">
+
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/chart"
+                android:layout_width="match_parent"
+                android:layout_height="400dp" />
+
+        </android.support.v7.widget.LinearLayoutCompat>
+    </ScrollView>
 
 </RelativeLayout>
