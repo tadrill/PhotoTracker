@@ -3,8 +3,10 @@
     <string name="add_tag">Add a Tag</string>
     <string name="title_activity_main2">Main2Activity</string>
     <string name="graph">Graph</string>
-    <string name="delete">Delete</string>
-    <string name="cancel">Cancel</string>
+    <string name="preview_controls_confirm">Save</string>
+    <string name="preview_controls_cancel">Delete</string>
+    <string name="preview_controls_retake">Retake</string>
+    <string name="cancel">Delete</string>
     <integer name="numColumns">2</integer>
     <string-array name="within_last_days_array">
         <item>"Last 24 hours"</item>

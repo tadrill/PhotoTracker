@@ -14,6 +14,7 @@ import com.github.mikephil.charting.data.Entry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -155,6 +156,8 @@ public class DBManager extends SQLiteOpenHelper {
             return;
         }
 
+        Set<String> uniqueTags = new HashSet<String>();
+
         String[] split = findNumbers(adapter.getItem(0));
         if (split.length == 1 && isNumber(split[0])) {
             // number inputtted
@@ -162,6 +165,7 @@ public class DBManager extends SQLiteOpenHelper {
             values.put(DBContract.FeedEntry.COLUMN_TAGS, DBContract.FeedEntry.DEFAULT_NUMERICAL_TAG);
         } else if (split.length == 1) {
             // not a number
+            uniqueTags.add(split[0]);
             values.put(DBContract.FeedEntry.COLUMN_TAGS, split[0]);
         } else {
             // number and tag
@@ -175,24 +179,30 @@ public class DBManager extends SQLiteOpenHelper {
         for (int i = 1; i < adapter.getCount(); i++) {
             values.remove(DBContract.FeedEntry.COLUMN_VALUE);
             String tag = adapter.getItem(i);
-            String[] reg = findNumbers(tag);
-            if (reg.length == 1) {
-                if (isNumber(reg[0])) {
-                    values.put(DBContract.FeedEntry.COLUMN_VALUE, reg[0]);
+            split = findNumbers(tag);
+            if (split.length == 1) {
+                if (isNumber(split[0])) {
+                    values.put(DBContract.FeedEntry.COLUMN_VALUE, split[0]);
                     values.put(DBContract.FeedEntry.COLUMN_TAGS, DBContract.FeedEntry.DEFAULT_NUMERICAL_TAG);
                 } else {
                     // not numerical
-                    values.put(DBContract.FeedEntry.COLUMN_TAGS, reg[0]);
+                    if (!uniqueTags.contains(split[0])) {
+                        values.put(DBContract.FeedEntry.COLUMN_TAGS, split[0]);
+                        uniqueTags.add(split[0]);
+                    } else {
+                        // don't add duplicate tags
+                        continue;
+                    }
                 }
             } else {
-                values.put(DBContract.FeedEntry.COLUMN_TAGS, reg[1]);
-                values.put(DBContract.FeedEntry.COLUMN_VALUE, reg[0]);
+                values.put(DBContract.FeedEntry.COLUMN_TAGS, split[1]);
+                values.put(DBContract.FeedEntry.COLUMN_VALUE, split[0]);
             }
 
             db.insert(DBContract.FeedEntry.TABLE_NAME, null, values);
         }
 
-
+        db.close();
     }
 
     private boolean isNumber(String s) {

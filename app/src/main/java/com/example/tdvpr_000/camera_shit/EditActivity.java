@@ -46,6 +46,8 @@ import com.github.florent37.camerafragment.internal.utils.Utils;
 
 import butterknife.BindView;
 
+import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
+
 /*
  * Created by memfis on 7/6/16.
  */
@@ -138,7 +140,8 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         photoPreviewContainer = (FrameLayout) findViewById(R.id.photo_preview_container);
         buttonPanel = (ViewGroup) findViewById(R.id.preview_control_panel);
         View confirmMediaResult = findViewById(R.id.confirm_media_result);
-//        View reTakeMedia = findViewById(R.id.re_take_media);
+        View reTakeMedia = findViewById(R.id.re_take_media);
+        reTakeMedia.setVisibility(View.INVISIBLE);
         View cancelMediaAction = findViewById(R.id.cancel_media_action);
         View tag = findViewById(R.id.textBox);
         View addButton = findViewById(R.id.addTag);
@@ -227,34 +230,22 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
         imagePreview = new ImageView(this);
         ImageLoader.Builder builder = new ImageLoader.Builder(this);
         builder.load(previewFilePath).build().into(imagePreview);
-//        Log.d("WHERE IS?", "" + photoPreviewContainer.getChildCount());
-//        photoPreviewContainer.removeAllViews();
         photoPreviewContainer.addView(imagePreview);
-
-//        try {
-//            ExifInterface exifInterface = new ExifInterface(previewFilePath);
-//            String attribute = exifInterface.getAttribute("UserComment");
-//            Log.v("USER COMMENT", "" + attribute);
-//            if (attribute == null) return;
-//            String[] tags = attribute.split("~T~T~");
-//            for (int i = 0; i < tags.length; i++) {
-//                if (!tags[i].equals("")) {
-//                    adapter.add(tags[i]);
-//                }
-//            }
-//            adapter.notifyDataSetChanged();
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//            System.exit(-1);
-//        }
 
 
         List<String> list = DBManager.tagsFrom(previewFilePath);
         adapter.addAll(list);
+
+        ListView tagList = (ListView)findViewById(R.id.tagList);
+        if(adapter.getCount() > 2){
+            View item = adapter.getView(0, null, tagList);
+            item.measure(0, 0);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(MATCH_PARENT, (int) (3.5 * item.getMeasuredHeight()));
+            tagList.setLayoutParams(params);
+        }
+
         adapter.notifyDataSetChanged();
 
-//        View tags = findViewById(R.id.tagView);
-//        photoPreviewContainer.addView(tags);
     }
 
 
@@ -447,6 +438,14 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
             adapter.add(text.getText().toString());
             ListView tagList = (ListView) findViewById(R.id.tagList);
             text.setText("");
+
+            if(adapter.getCount() > 2){
+                View item = adapter.getView(0, null, tagList);
+                item.measure(0, 0);
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(MATCH_PARENT, (int) (3.5 * item.getMeasuredHeight()));
+                tagList.setLayoutParams(params);
+            }
+
             adapter.notifyDataSetChanged();
             return;
         }

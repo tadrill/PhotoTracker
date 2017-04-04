@@ -383,26 +383,6 @@ public class PreviewActivity extends AppCompatActivity implements View.OnClickLi
 //            resultIntent.putExtra(RESPONSE_CODE_ARG, ACTION_CONFIRM).putExtra(FILE_PATH_ARG, previewFilePath);
             resultIntent = new Intent(getApplicationContext(), GalleryActivity.class);
             startActivity(resultIntent);
-            /*
-            * @TO-DO:
-            * Insert tags into database
-            */
-//            final String UserComment = "UserComment";
-//            try {
-//                ExifInterface exifInterface = new ExifInterface(previewFilePath);
-//
-//                String tags = "";
-//                for (int i = 0, len = adapter.getCount(); i < len; i++) {
-//                    tags += "~T~T~" + adapter.getItem(i);       // ~T~T~ as the delitimer
-//                }
-//                exifInterface.setAttribute(UserComment, tags);
-//                exifInterface.saveAttributes();
-//
-//                ExifInterface testorz = new ExifInterface(previewFilePath);
-//                Log.v("THIS IS A TEST", "" +testorz.getAttribute(UserComment));
-
-
-            // let's try and put it in a db
 
             DBManager.insertTags(previewFilePath, adapter, -1);
 

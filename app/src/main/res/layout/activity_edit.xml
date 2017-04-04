@@ -19,7 +19,34 @@
             android:layout_height="wrap_content" />
 
     </com.example.tdvpr_000.camera_shit.AspectRatio>
+    <LinearLayout
+        android:id="@+id/edit_control_panel"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:layout_alignParentBottom="false"
+        android:background="#82212121"
+        android:orientation="horizontal"
+        android:padding="10dp">
 
+        <TextView
+            android:id="@+id/delete_action"
+            style="@style/PreviewButtonsStyle"
+            android:drawableTop="@drawable/ic_clear_white_24dp"
+            android:text="Delete" />
+
+        <TextView
+            android:id="@+id/exit_action"
+            style="@style/PreviewButtonsStyle"
+            android:drawableTop="@drawable/ic_replay_white_24dp"
+            android:text="Exit" />
+
+        <TextView
+            android:id="@+id/confirm_action"
+            style="@style/PreviewButtonsStyle"
+            android:drawableTop="@drawable/ic_done_white_24dp"
+            android:text="@string/preview_controls_confirm" />
+
+    </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
