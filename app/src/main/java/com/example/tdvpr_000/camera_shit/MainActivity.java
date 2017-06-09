@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        // this code deletes the current database. new one will be created automatically
+//        // this code deletes the current database. new one will be created automatically
 //        DBManager dbman = new DBManager(this);
 //        SQLiteDatabase db = dbman.getWritableDatabase();
 //        dbman.onUpgrade(db, 1, 2);

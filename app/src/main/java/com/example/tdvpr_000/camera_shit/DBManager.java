@@ -48,7 +48,7 @@ public class DBManager extends SQLiteOpenHelper {
 
     // get counts for each tag
     private static final String SQL_TAG_COUNT = "SELECT " + DBContract.FeedEntry.COLUMN_TAGS + ", count("
-            + DBContract.FeedEntry.COLUMN_TAGS + ") AS c" + " FROM " + DBContract.FeedEntry.TABLE_NAME + " GROUP BY "
+            + DBContract.FeedEntry.COLUMN_TAGS + ") AS TAG_APPEARANCES FROM " + DBContract.FeedEntry.TABLE_NAME + " GROUP BY "
             + DBContract.FeedEntry.COLUMN_TAGS;
 
     private static final String SQL_WITH_TAGS = "SELECT  min(" + DBContract.FeedEntry._ID + ") as _id, min(" + DBContract.FeedEntry.COLUMN_DATES + ") as " + DBContract.FeedEntry.COLUMN_DATES + ","

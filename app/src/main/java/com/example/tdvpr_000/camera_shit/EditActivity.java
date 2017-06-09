@@ -105,6 +105,8 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
 //    }
 
 
+
+    // TODO: pressing the back button deletes the photo (not from database). should act as a cancel. save photo on back pressed with the correct time taken
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -465,7 +467,7 @@ public class EditActivity extends AppCompatActivity implements View.OnClickListe
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-        deleteMediaFile();
+//        deleteMediaFile();
     }
 
     private boolean deleteMediaFile() {
