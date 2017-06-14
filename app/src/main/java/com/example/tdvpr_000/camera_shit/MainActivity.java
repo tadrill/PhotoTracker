@@ -91,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+
     @Override
     protected void onCreate(Bundle savedInstanceState) throws SecurityException {
 
@@ -142,9 +143,8 @@ public class MainActivity extends AppCompatActivity {
             cameraFragment.setResultListener(new CameraFragmentResultListener() {
                 @Override
                 public void onVideoRecorded(String filePath) {
-
-                    Intent intent = PreviewActivity.newIntentVideo(MainActivity.this, filePath);
-                    startActivityForResult(intent, REQUEST_PREVIEW_CODE);
+// todo: clean up
+                    return;
 
                 }
 
